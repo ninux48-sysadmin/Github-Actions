@@ -42,28 +42,11 @@ Il workflow CD viene eseguito **al completamento di una pull request sulla branc
 1. **Checkout del codice**
 2. **Elenco dei file presenti nel workspace**
 3. **Deploy remoto via rsync**
-   - Sincronizza la cartella `servers/base` con il server remoto `207.154.210.208`
+   - Sincronizza la cartella `servers/base` con il server remoto `*`
    - Utilizza la chiave SSH memorizzata come secret GitHub (`SSH_PRIVATE_KEY`)
    - Impiega l'action [`burnett01/rsync-deployments`](https://github.com/Burnett01/rsync-deployments)
 
 Questo processo consente di distribuire automaticamente il codice testato su un server remoto in modo sicuro e veloce.
-
----
-
-## 🔐 Sicurezza
-
-Il deploy è protetto tramite l’uso di **chiavi SSH** archiviate nei `Secrets` di GitHub Actions, evitando così l'esposizione di credenziali sensibili.
-
----
-
-## 📁 Struttura repository consigliata
-
-```
-📁 servers/
-   └── 📁 base/
-         ├── 0_step.sh
-         └── altri script e configurazioni
-```
 
 ---
 
