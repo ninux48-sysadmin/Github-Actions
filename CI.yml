@@ -1,0 +1,66 @@
+name: CI della Repository
+
+on:
+  push:
+
+jobs:
+  test-repository:
+    name: test della repository
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: clonazione repository
+      uses: actions/checkout@v4
+
+    - name: Installare shellcheck,tree e perl
+      run: sudo apt install tree shellcheck perl micro
+
+    - name: check degli script bash
+      run: |
+        find "$GITHUB_WORKSPACE/" -iname "*.sh" | while read -r file; do
+          echo "Checking $file"
+          shellcheck -e SC2181 -e SC2148 -e SC2086 -e SC2164 -e SC2046 -e SC2210 -e SC2002 "$file"
+        done  
+    
+    - name: Install System Dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y cpanminus build-essential libssl-dev libexpat1-dev \
+                           libdbi-perl libdbd-mysql-perl libwww-perl
+
+    - name: Install Perl Dependencies
+      run: |
+        sudo cpanm --notest Daemon::Control MongoDB Cache::Memcached \
+                   Dancer2 Config::Tiny DBIx::Class DateTime
+
+    - name: test script perl
+      run: |
+        find "$GITHUB_WORKSPACE/" -iname "*.pl" | while read -r file; do
+          echo "Checking $file"
+          perl -c "$file"
+        done
+        
+    - name: Setup Docker e prevenzione conflitti
+      run: |
+        sudo apt-get remove containerd.io
+        sudo apt install docker.io docker-compose -y
+        sudo systemctl start docker
+        sudo gpasswd -a $USER docker
+
+      
+    - name: Crezione cartella /base 
+      run: sudo mkdir /base && sudo rsync -a --copy-links $GITHUB_WORKSPACE/servers/base/ /base
+
+    - name: Verifica dei file dentro /base
+      run: tree /base 
+    
+    - name: test /base
+      run: cd /base && sudo sh ./0_step.sh
+      
+    - name: testing daemons
+      run: sudo systemctl start mariadb.service mongod.service munin-node.service memcached.service nginx.service && sudo systemctl status mariadb.service mongod.service munin-node.service memcached.service nginx.service
+
+    - name: test configurazione di nagios
+      run: sudo systemctl restart nagios.service && sudo /usr/local/nagios/bin/nagios -v /usr/local/nagios/etc/nagios.cfg
+
+

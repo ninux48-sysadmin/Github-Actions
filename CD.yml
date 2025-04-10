@@ -1,0 +1,28 @@
+name: CD della Repository
+
+on:
+  pull_request:
+    branches: 
+      - main
+    types: [closed]
+jobs:
+  CD-repository:
+        name: Deploy della repository 
+        runs-on: ubuntu-latest
+    
+        steps:
+        - uses: actions/checkout@v4
+        
+        - name: List workspace contents
+          run: ls -R $GITHUB_WORKSPACE
+        
+        - name: rsync deployments
+          uses: burnett01/rsync-deployments@7.0.2
+          with:
+            switches: -avzr --delete --copy-links
+            path: servers/base
+            remote_path: /root/
+            remote_host: 207.154.210.208
+            remote_port: 22
+            remote_user: root
+            remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
