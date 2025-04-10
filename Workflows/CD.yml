@@ -22,7 +22,7 @@ jobs:
             switches: -avzr --delete --copy-links
             path: servers/base
             remote_path: /root/
-            remote_host: 207.154.210.208
+            remote_host: *
             remote_port: 22
             remote_user: root
             remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
